@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using BaseProject.Area.Models;
+using BaseProject.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,6 +11,13 @@ namespace BaseProject.Area.Controllers
     [Route("[area]/Notes")]
     public class NotesController : Controller
     {
+        private readonly ApplicationContext _context;
+
+        public NotesController(ApplicationContext context)
+        {
+            _context = context;
+        }
+
         // GET: Comment
         [Route("Index")]
         public ActionResult Index()
@@ -23,6 +32,7 @@ namespace BaseProject.Area.Controllers
         }
 
         // GET: Comment/Create
+        [Route("Create")]
         public ActionResult Create()
         {
             return View();
@@ -31,11 +41,15 @@ namespace BaseProject.Area.Controllers
         // POST: Comment/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async System.Threading.Tasks.Task<ActionResult> CreateAsync(Note note, CancellationToken cancellationToken)
         {
             try
             {
                 // TODO: Add insert logic here
+                if (!ModelState.IsValid)
+                    return View(note);
+                _context.Users.Add(note);
+                await _context.SaveChangesAsync(cancellationToken);
 
                 return RedirectToAction(nameof(Index));
             }
@@ -92,3 +106,4 @@ namespace BaseProject.Area.Controllers
         }
     }
 }
+
